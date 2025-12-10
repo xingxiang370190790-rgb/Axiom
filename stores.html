@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AXIOM - 空间叙事</title>
+    <style>
+        /* ============================ */
+        /* 1. 核心基础设置 */
+        /* ============================ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: "Noto Serif SC", "Songti SC", -apple-system, BlinkMacSystemFont, serif; 
+            background-color: #fff; 
+            overflow-x: hidden; 
+            color: #333;
+            padding-top: 80px; 
+        }
+
+        /* 顶部导航 */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 50px; background-color: #f4f4f4; height: 80px;
+            border-bottom: 1px solid #e0e0e0;
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;   
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .logo-container { width: 180px; height: 100%; display: flex; align-items: center; }
+        .logo-container img { max-height: 70px; width: auto; display: block; }
+        nav ul { display: flex; list-style: none; gap: 60px; }
+        nav ul li a {
+            text-decoration: none; color: #333; font-size: 16px; font-weight: 500;
+            font-family: -apple-system, sans-serif; transition: color 0.3s;
+        }
+        nav ul li a:hover { color: #a63434; }
+        .search-container { width: 150px; }
+        .search-input {
+            width: 100%; padding: 8px 15px; border-radius: 20px;
+            border: none; background-color: #e6dac6; color: #fff; outline: none; font-size: 14px;
+        }
+
+        /* ============================ */
+        /* 2. 页面标题头 */
+        /* ============================ */
+        .page-header {
+            width: 100%;
+            height: 50vh;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-image: 
+                linear-gradient(#e0d5c5 1px, transparent 1px),
+                linear-gradient(90deg, #e0d5c5 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .ph-subtitle {
+            font-size: 16px; color: #a63434; letter-spacing: 4px; margin-bottom: 20px;
+            text-transform: uppercase; font-family: sans-serif;
+        }
+        .ph-title {
+            font-size: 56px; font-weight: bold; color: #333; margin-bottom: 20px;
+            font-family: "Noto Serif SC", serif;
+        }
+        .ph-desc {
+            font-size: 16px; color: #666; max-width: 600px; line-height: 1.8;
+        }
+
+        /* ============================ */
+        /* 3. 门店展示区 */
+        /* ============================ */
+        .city-section {
+            padding: 100px 0;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+
+        .city-header {
+            padding: 0 5vw;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .city-name {
+            font-size: 48px; color: #333; font-weight: bold; font-family: "Noto Serif SC", serif;
+        }
+        .city-desc {
+            font-size: 14px; color: #888; max-width: 400px; text-align: right; line-height: 1.6;
+        }
+
+        /* 画廊包装器 */
+        .gallery-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        /* 滚动轨道 */
+        .gallery-track {
+            display: flex;
+            gap: 30px;
+            overflow-x: auto; 
+            padding: 50px 5vw; 
+            scroll-snap-type: x mandatory; 
+            scrollbar-width: none; 
+            scroll-behavior: smooth; 
+        }
+        .gallery-track::-webkit-scrollbar { display: none; }
+
+        /* 单个图片卡片 */
+        .gallery-card {
+            flex: 0 0 60vw; /* 占据屏幕 60% 宽度 */
+            height: 60vh;
+            position: relative;
+            scroll-snap-align: center; 
+            border-radius: 20px;
+            overflow: hidden;
+            background-color: #f0f0f0;
+            
+            /* 默认状态 (未被横向选中时) */
+            transform: scale(0.9);
+            filter: brightness(0.7) grayscale(30%);
+            opacity: 0.8;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* 横向滚动激活状态 (中间变大) */
+        .gallery-card.focused {
+            transform: scale(1);
+            filter: brightness(1) grayscale(0%);
+            opacity: 1;
+            box-shadow: 0 20px 50px rgba(166, 52, 52, 0.2);
+            z-index: 2;
+        }
+
+        .gallery-card img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+        /* 左右切换按钮 */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            color: #333;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        .nav-btn:hover {
+            background-color: #a63434;
+            color: #fff;
+            border-color: #a63434;
+            transform: translateY(-50%) scale(1.1);
+        }
+        .nav-btn.prev { left: 30px; }
+        .nav-btn.next { right: 30px; }
+
+        /* ============================ */
+        /* 4. 淡入动画系统 */
+        /* ============================ */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            filter: blur(10px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, opacity, filter;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+        }
+        .delay-100 { transition-delay: 0.1s; }
+        .delay-200 { transition-delay: 0.2s; }
+        .delay-300 { transition-delay: 0.3s; }
+
+        /* ============================ */
+        /* 5. 页脚 */
+        /* ============================ */
+        .site-footer { background-color: #8B2E2E; color: #fff; padding: 80px 10vw 40px 10vw; width: 100%; }
+        .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1.5fr; gap: 40px; margin-bottom: 80px; }
+        .footer-brand { display: flex; flex-direction: column; gap: 20px; }
+        .footer-logo { width: 180px; height: auto; filter: brightness(0) invert(1); margin-bottom: 10px; }
+        .footer-desc { font-size: 14px; line-height: 1.6; opacity: 0.9; max-width: 300px; }
+        .footer-nav h4, .footer-contact h4 { font-size: 20px; font-weight: bold; margin-bottom: 30px; }
+        .footer-nav ul { display: flex; flex-direction: column; gap: 15px; list-style: none; }
+        .footer-nav ul li a { color: #fff; text-decoration: none; opacity: 0.8; }
+        .copyright { text-align: center; font-size: 14px; opacity: 0.7; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+
+        @media (max-width: 900px) {
+            .gallery-card { flex: 0 0 85vw; height: 50vh; } 
+            .city-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .city-desc { text-align: left; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .nav-btn { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. 导航栏 -->
+    <header>
+        <div class="logo-container">
+            <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251210/j8Lg/640X440/%E7%BA%A2logo.png/webp">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">主页</a></li>
+                <li><a href="products.html">产品</a></li>
+                <li><a href="#" style="color:#a63434;">门店</a></li>
+                <li><a href="#">品牌</a></li>
+                <li><a href="#">联系我们</a></li>
+            </ul>
+        </nav>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="搜索城市...">
+        </div>
+    </header>
+
+    <!-- 2. 标题区 -->
+    <div class="page-header">
+        <div class="ph-subtitle reveal">Offline Stores</div>
+        <h1 class="ph-title reveal delay-100">空间叙事 · 移步换景</h1>
+        <p class="ph-desc reveal delay-200">
+            从北京的红墙灰瓦到纽约的摩登光影。<br>
+            每一家 AXIOM 门店都是一个独立的文化容器，承载着我们对城市的独特解读。
+        </p>
+    </div>
+
+    <!-- 3. 门店画廊 - 曼哈顿篇 -->
+    <section class="city-section">
+        <div class="city-header">
+            <h2 class="city-name reveal">MANHATTAN / 曼哈顿</h2>
+            <p class="city-desc reveal delay-100">跨界・雅致・对话<br>跨越山海传递东方韵味，让海外消费者在日常使用中，触摸中轴文化的独特魅力。</p>
+        </div>
+        
+        <div class="gallery-wrapper reveal delay-200">
+            <button class="nav-btn prev">←</button>
+            <button class="nav-btn next">→</button>
+            
+            <div class="gallery-track">
+                <!-- 图1 -->
+                <div class="gallery-card">
+                    <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251211/x9W1/2824X2508/6.png/webp" alt="门店外观">
+                </div>
+                <!-- 图2 (默认居中) -->
+                <div class="gallery-card">
+                    <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251211/0Aby/1596X1279/4.png/webp" alt="内部陈列">
+                </div>
+                <!-- 图3 -->
+                <div class="gallery-card">
+                    <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251210/0Qj4/222X160/8.png/webp" alt="细节">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 门店画廊 - 布鲁克林篇 -->
+    <section class="city-section" style="background-color: #fcfcfc;">
+        <div class="city-header">
+            <h2 class="city-name reveal">BROOKLYN / 布鲁克林</h2>
+            <p class="city-desc reveal delay-100">文艺・融合・新生<br>用设计为文化搭桥，让古老中轴在异国焕发秩序之美与鲜活气息。</p>
+        </div>
+        
+        <div class="gallery-wrapper reveal delay-200">
+            <button class="nav-btn prev">←</button>
+            <button class="nav-btn next">→</button>
+
+            <div class="gallery-track">
+                <!-- 图1 -->
+                <div class="gallery-card">
+                    <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251211/LoT2/1920X1280/5.png/webp" alt="体验中心">
+                </div>
+                <!-- 图2 (默认居中) -->
+                <div class="gallery-card">
+                    <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251211/LoT2/1920X1280/5.png/webp" alt="陈列">
+                </div>
+                <!-- 图3 -->
+                <div class="gallery-card">
+                    <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251211/LoT2/1920X1280/5.png/webp" alt="香薰区">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. 门店画廊 - 北京篇 -->
+    <section class="city-section">
+        <div class="city-header">
+            <h2 class="city-name reveal">BEIJING / 北京</h2>
+            <p class="city-desc reveal delay-100">原点 · 秩序 · 红墙<br>落脚三里屯潮流地标，让传统与现代碰撞出别样火花，解锁沉浸式文化消费新体验。</p>
+        </div>
+        
+        <div class="gallery-wrapper reveal delay-200">
+            <button class="nav-btn prev">←</button>
+            <button class="nav-btn next">→</button>
+
+            <div class="gallery-track">
+                <!-- 图1 -->
+                <div class="gallery-card">
+                    <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251211/WLzD/1571X885/1.png/webp" alt="成都店">
+                </div>
+                <!-- 图2 (默认居中) -->
+                <div class="gallery-card">
+                    <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251211/GGoT/1922X1081/2.png/webp" alt="竹编">
+                </div>
+                <!-- 图3 -->
+                <div class="gallery-card">
+                    <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251211/t3iO/1444X812/3.png/webp" alt="玩偶区">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251210/j8Lg/640X440/%E7%BA%A2logo.png/webp" alt="AXIOM Logo" class="footer-logo">
+                <p class="footer-desc">
+                    以东方文化的深度与现代设计的力量，为全球年轻人打造一个具有文化态度的潮流品牌。
+                </p>
+            </div>
+            <div class="footer-nav">
+                <h4>商城</h4>
+                <ul>
+                    <li><a href="index.html">主页</a></li>
+                    <li><a href="products.html">系列</a></li>
+                    <li><a href="#">服务</a></li>
+                    <li><a href="#">联系</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4 style="opacity:0">联系</h4>
+                <p style="opacity:0.8">AXIOM2025@gmail.com</p>
+            </div>
+        </div>
+        <div class="copyright">Copyright 2025 | Designed By AXIOM</div>
+    </footer>
+
+    <!-- 脚本区域 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            /* =========================================
+               功能1：垂直滚动淡入动画 (Reveal System)
+               ========================================= */
+            const scrollObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    } else {
+                        entry.target.classList.remove('active');
+                    }
+                });
+            }, {
+                threshold: 0.1, 
+                rootMargin: "0px 0px -50px 0px"
+            });
+
+            const revealElements = document.querySelectorAll('.reveal');
+            revealElements.forEach(el => scrollObserver.observe(el));
+
+
+            /* =========================================
+               功能2：横向画廊逻辑
+               ========================================= */
+            const wrappers = document.querySelectorAll('.gallery-wrapper');
+
+            wrappers.forEach(wrapper => {
+                const track = wrapper.querySelector('.gallery-track');
+                const prevBtn = wrapper.querySelector('.prev');
+                const nextBtn = wrapper.querySelector('.next');
+                const cards = track.querySelectorAll('.gallery-card');
+
+                // 2.1 按钮点击逻辑
+                if(nextBtn && prevBtn) {
+                    nextBtn.addEventListener('click', () => {
+                        const scrollAmount = window.innerWidth * 0.6 + 30; 
+                        track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                    });
+
+                    prevBtn.addEventListener('click', () => {
+                        const scrollAmount = window.innerWidth * 0.6 + 30;
+                        track.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                    });
+                }
+
+                // 2.2 初始化时，让第2张图片居中
+                if (cards.length >= 2) {
+                    const middleCard = cards[1]; 
+                    const centerScrollPosition = middleCard.offsetLeft - (track.clientWidth / 2) + (middleCard.clientWidth / 2);
+                    track.scrollLeft = centerScrollPosition;
+                }
+
+                // 2.3 监听横向滚动，实现“中间变大”效果
+                const galleryObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('focused');
+                        } else {
+                            entry.target.classList.remove('focused');
+                        }
+                    });
+                }, {
+                    root: track, 
+                    threshold: 0.5, 
+                    rootMargin: "0px -20% 0px -20%" 
+                });
+
+                cards.forEach(card => galleryObserver.observe(card));
+            });
+        });
+    </script>
+</body>
+</html>
