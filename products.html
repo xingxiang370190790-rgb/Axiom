@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AXIOM - 甄选系列</title>
+    <style>
+        /* ============================ */
+        /* 1. 核心基础设置 (保持一致) */
+        /* ============================ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: "Noto Serif SC", "Songti SC", -apple-system, BlinkMacSystemFont, serif; 
+            background-color: #fff; 
+            overflow-x: hidden; 
+            color: #333;
+            padding-top: 80px; 
+        }
+
+        /* 顶部导航 (保持一致) */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 50px; background-color: #f4f4f4; height: 80px;
+            border-bottom: 1px solid #e0e0e0;
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;   
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .logo-container { width: 180px; height: 100%; display: flex; align-items: center; }
+        .logo-container img { max-height: 70px; width: auto; display: block; }
+        nav ul { display: flex; list-style: none; gap: 60px; }
+        nav ul li a {
+            text-decoration: none; color: #333; font-size: 16px; font-weight: 500;
+            font-family: -apple-system, sans-serif; transition: color 0.3s;
+        }
+        nav ul li a:hover { color: #a63434; }
+        .search-container { width: 150px; }
+        .search-input {
+            width: 100%; padding: 8px 15px; border-radius: 20px;
+            border: none; background-color: #e6dac6; color: #fff; outline: none; font-size: 14px;
+        }
+
+        /* ============================ */
+        /* 2. 页面标题头 (Header Hero) */
+        /* ============================ */
+        .page-header {
+            width: 100%;
+            height: 60vh;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            background-image: radial-gradient(#e0d5c5 1px, transparent 1px); /* 细微的点状背景 */
+            background-size: 20px 20px;
+        }
+        
+        .ph-subtitle {
+            font-size: 18px; color: #a63434; letter-spacing: 4px; margin-bottom: 20px;
+            text-transform: uppercase; font-family: sans-serif;
+        }
+        .ph-title {
+            font-size: 64px; font-weight: bold; color: #333; margin-bottom: 30px;
+            font-family: "Noto Serif SC", serif;
+        }
+        .ph-line {
+            width: 2px; height: 80px; background-color: #a63434; margin-top: 20px;
+        }
+
+        /* ============================ */
+        /* 3. 产品展示核心区 (Zig-Zag) */
+        /* ============================ */
+        .product-showcase {
+            padding: 120px 10vw;
+            background-color: #fff;
+        }
+
+        .single-product {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 150px; /* 产品间距 */
+            gap: 80px;
+        }
+
+        /* 偶数个产品反转布局 (图在右，文在左) */
+        .single-product:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        /* 图片区域 */
+        .sp-image-box {
+            width: 50%;
+            height: 600px;
+            position: relative;
+            border-radius: 20px; /* 与主站卡片圆角呼应 */
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        }
+        .sp-image-box img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.8s ease;
+        }
+        /* 鼠标悬停图片微放大 */
+        .single-product:hover .sp-image-box img {
+            transform: scale(1.05);
+        }
+
+        /* 文字区域 */
+        .sp-text-box {
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .sp-cat {
+            font-size: 14px; color: #999; letter-spacing: 2px; margin-bottom: 15px;
+            text-transform: uppercase; font-family: sans-serif;
+        }
+        .sp-name {
+            font-size: 42px; color: #a63434; margin-bottom: 30px; font-weight: bold;
+            line-height: 1.2;
+        }
+        .sp-desc {
+            font-size: 16px; line-height: 2; color: #555; margin-bottom: 40px;
+            text-align: justify;
+        }
+        .sp-price-row {
+            display: flex; align-items: center; gap: 30px;
+        }
+        .sp-price {
+            font-size: 28px; font-family: "Times New Roman", serif; font-weight: bold; color: #333;
+        }
+        
+        /* 购买按钮：实心红圆 或者 边框按钮 */
+        .buy-btn {
+            padding: 12px 35px;
+            border: 1px solid #a63434;
+            background-color: transparent;
+            color: #a63434;
+            font-size: 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .buy-btn:hover {
+            background-color: #a63434;
+            color: #fff;
+        }
+
+        /* 装饰：背景汉字水印 (可选) */
+        .bg-char {
+            position: absolute;
+            font-size: 300px;
+            font-family: "Songti SC", serif;
+            color: rgba(0,0,0,0.03);
+            z-index: 0;
+            pointer-events: none;
+        }
+        /* 定位水印 */
+        .single-product:nth-child(1) .bg-char { top: -50px; left: -50px; }
+        .single-product:nth-child(2) .bg-char { bottom: -50px; right: -50px; }
+
+        /* ============================ */
+        /* 4. 动画类 (Copy from main) */
+        /* ============================ */
+        .reveal {
+            opacity: 0;
+            transform: translateY(60px);
+            filter: blur(10px);
+            transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, opacity, filter;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+        }
+        
+        /* 延迟类 */
+        .delay-100 { transition-delay: 0.1s; }
+        .delay-200 { transition-delay: 0.2s; }
+
+        /* ============================ */
+        /* 5. 页脚 (保持一致) */
+        /* ============================ */
+        .site-footer { background-color: #8B2E2E; color: #fff; padding: 80px 10vw 40px 10vw; width: 100%; }
+        .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1.5fr; gap: 40px; margin-bottom: 80px; }
+        .footer-brand { display: flex; flex-direction: column; gap: 20px; }
+        .footer-logo { width: 180px; height: auto; filter: brightness(0) invert(1); margin-bottom: 10px; }
+        .footer-desc { font-size: 14px; line-height: 1.6; opacity: 0.9; max-width: 300px; }
+        .footer-nav h4, .footer-contact h4 { font-size: 20px; font-weight: bold; margin-bottom: 30px; }
+        .footer-nav ul { display: flex; flex-direction: column; gap: 15px; list-style: none; }
+        .footer-nav ul li a { color: #fff; text-decoration: none; opacity: 0.8; }
+        .copyright { text-align: center; font-size: 14px; opacity: 0.7; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+
+        /* 响应式 */
+        @media (max-width: 900px) {
+            .single-product { flex-direction: column !important; margin-bottom: 80px; gap: 40px; }
+            .sp-image-box, .sp-text-box { width: 100%; }
+            .sp-image-box { height: 350px; }
+            .sp-name { font-size: 32px; }
+            .ph-title { font-size: 40px; }
+            .footer-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. 导航栏 -->
+    <header>
+        <div class="logo-container">
+            <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251210/j8Lg/640X440/%E7%BA%A2logo.png/webp">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="测试2.html">主页</a></li>
+                <li><a href="#" style="color:#a63434;">产品</a></li> <!-- 当前页高亮 -->
+                <li><a href="#">门店</a></li>
+                <li><a href="#">品牌</a></li>
+                <li><a href="#">联系我们</a></li>
+            </ul>
+        </nav>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="搜索单品...">
+        </div>
+    </header>
+
+    <!-- 2. 页面标题头 -->
+    <div class="page-header">
+        <div class="ph-subtitle reveal">Axiom Collection</div>
+        <h1 class="ph-title reveal delay-100">轴出新思 · 甄选好物</h1>
+        <div class="ph-line reveal delay-200"></div>
+    </div>
+
+    <!-- 3. 产品展示列表 (Z字形布局) -->
+    <div class="product-showcase">
+        
+        <!-- 产品 1：左图右文 (棋轴) -->
+        <div class="single-product">
+            <div class="bg-char">纸</div> <!-- 装饰字 -->
+            
+            <div class="sp-image-box reveal">
+                <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251211/0ksh/1631X1092/03d59d959920564b0334acd9c651b6e4.png/webp" alt="棋轴">
+            </div>
+            
+            <div class="sp-text-box reveal delay-100">
+                <div class="sp-cat">Stationery Series</div>
+                <h2 class="sp-name">棋轴 · 跳棋礼盒</h2>
+                <div class="sp-desc">
+                    灵感源自北京中轴线的秩序美学，将古建藻井的经典四色解构重组，铺就成一方趣味棋盘；棋子则凝练中轴地标建筑的轮廓剪影，让古建跃然棋间。色彩跳跃与棋局推演间，古老文脉与现代潮趣奇妙共振。
+                </div>
+                <div class="sp-price-row">
+                    <span class="sp-price">¥ 398.00</span>
+                    <a href="#" class="buy-btn">查看详情</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 产品 2：右图左文 (故地香薰 - 保持不变) -->
+        <div class="single-product">
+            <div class="bg-char">香</div>
+            
+            <div class="sp-image-box reveal">
+                <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251210/53Dr/516X552/2.png/webp" alt="故地香薰">
+            </div>
+            
+            <div class="sp-text-box reveal delay-100">
+                <div class="sp-cat">Home Fragrance</div>
+                <h2 class="sp-name">故地 · 氛围香薰蜡烛</h2>
+                <div class="sp-desc">
+                    复刻北京中轴线古建筑群的木质气息。前调是清晨柏林的微冷，中调融入檀香与陈茶的暖意，尾调则是经过岁月沉淀的琥珀香。点燃它，不仅是点亮满室馨香，更是唤醒一段关于时间的记忆。
+                </div>
+                <div class="sp-price-row">
+                    <span class="sp-price">¥ 168.00</span>
+                    <a href="#" class="buy-btn">查看详情</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 产品 3：左图右文 (阿轴) -->
+        <div class="single-product">
+            <div class="bg-char">器</div>
+            
+            <div class="sp-image-box reveal">
+                <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251211/4aUq/5760X3240/9.png/webp" alt="阿轴 · 京文化印象玩偶">
+            </div>
+            
+            <div class="sp-text-box reveal delay-100">
+                <div class="sp-cat">Concept Toys</div>
+                <h2 class="sp-name">阿轴 · 京文化印象玩偶</h2>
+                <div class="sp-desc">
+                    阿轴重磅登场！迈着桀骜的步伐，自带老北京骨子里的松弛气场～ 以胡同里的自在风骨、皇城根下的鲜活态度为灵感原型，让阿轴跳出传统框架，用潮酷姿态解锁京味新表达。               </div>
+                <div class="sp-price-row">
+                    <span class="sp-price">¥ 58.00</span>
+                    <a href="#" class="buy-btn">查看详情</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 产品 4：右图左文 (景明) -->
+        <div class="single-product">
+            <div class="bg-char">饰</div>
+            
+            <div class="sp-image-box reveal">
+                <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251211/POMt/3778X2625/4.png/webp" alt="景明 · 春日限定预约特典">
+            </div>
+            
+            <div class="sp-text-box reveal delay-100">
+                <div class="sp-cat">Accessories</div>
+                <h2 class="sp-name">景明 · 春日限定预约特典</h2>
+                <div class="sp-desc">
+                    取意“至若春和景明”，捕捉中轴线御花园初春的第一抹生机。将宫墙旁的玉兰与垂柳意象，封存于这套限定礼盒之中。现在预约，可得预约特典抱枕。                </div>
+                <div class="sp-price-row">
+                    <span class="sp-price">¥ 128.00</span>
+                    <a href="#" class="buy-btn">查看详情</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 4. 页脚 -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <img src="https://test.fukit.cn/autoupload/f/25Z--SdXBQPjV-JX-KI77NiO_OyvX7mIgxFBfDMDErs/20251210/j8Lg/640X440/%E7%BA%A2logo.png/webp" alt="AXIOM Logo" class="footer-logo">
+                <p class="footer-desc">
+                    以东方文化的深度与现代设计的力量，为全球年轻人打造一个具有文化态度的潮流品牌。
+                </p>
+            </div>
+            <div class="footer-nav">
+                <h4>商城</h4>
+                <ul>
+                    <li><a href="#">主页</a></li>
+                    <li><a href="#">系列</a></li>
+                    <li><a href="#">服务</a></li>
+                    <li><a href="#">联系</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4 style="opacity:0">联系</h4>
+                <p style="opacity:0.8">AXIOM2025@gmail.com</p>
+            </div>
+        </div>
+        <div class="copyright">Copyright 2025 | Designed By AXIOM</div>
+    </footer>
+
+    <!-- 5. 动画脚本 (反复触发逻辑) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    } else {
+                        // 离开屏幕时移除，实现反复动画
+                        entry.target.classList.remove('active');
+                    }
+                });
+            }, {
+                threshold: 0.15, 
+                rootMargin: "0px 0px -50px 0px"
+            });
+
+            const revealElements = document.querySelectorAll('.reveal');
+            revealElements.forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+</html>
